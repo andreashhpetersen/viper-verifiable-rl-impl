@@ -1,0 +1,4 @@
+gymnasium==0.27.1
+scikit-learn==1.2.1
+stable-baselines3 @ git+https://github.com/carlosluis/stable-baselines3@85bb0d4aed29d434a44ee6c708b36b4e32d88962
+tqdm==4.64.1
