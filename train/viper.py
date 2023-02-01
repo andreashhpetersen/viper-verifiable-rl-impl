@@ -121,8 +121,8 @@ def get_loss(model: BaseAlgorithm, obs):
     if isinstance(model, PPO):
         # For policy gradient methods we use the max entropy formulation
         # to get Q(s, a) = -log pi(a|s) TODO copilot says minus??
-        action_prob_tensor = model.policy.get_distribution(torch.from_numpy(obs)).distribution.probs
-        action_prob = np.log(action_prob_tensor.detach().numpy() + 1e-4)
+        action_prob_tensor = model.policy.get_distribution(torch.from_numpy(obs).cuda()).distribution.probs
+        action_prob = np.log(action_prob_tensor.detach().cpu().numpy() + 1e-4)
         return action_prob.max(axis=1) - action_prob.min(axis=1)
 
     raise NotImplementedError(f"Model type {type(model)} not supported")
