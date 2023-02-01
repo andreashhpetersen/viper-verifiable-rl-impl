@@ -1,5 +1,14 @@
 import argparse
 
+# Gymnasium replaces gym, so we should try and use that
+try:
+    import sys
+    import gymnasium as gym
+    sys.modules['gym'] = gym
+except ModuleNotFoundError:
+    import gym
+
+
 from train.oracle import train_oracle
 from train.viper import train_viper
 from test.oracle import test_oracle
