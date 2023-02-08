@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 from gym import register
-from stable_baselines3.common.env_util import make_atari_env
+from stable_baselines3.common.env_util import make_atari_env, make_vec_env
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import VecFrameStack, DummyVecEnv
 
@@ -21,7 +21,7 @@ def make_env(args, test_viper=False):
             return PongWrapper(env, return_extracted_obs=True)
         return VecFrameStack(PongWrapper(env), n_stack=4)
     if args.env_name == "CartPole-v1":
-        return DummyVecEnv([lambda: gym.make(args.env_name) for _ in range(args.n_env)])
+        return make_vec_env(args.env_name, n_envs=args.n_env)
     return gym.make(args.env_name)
 
 
