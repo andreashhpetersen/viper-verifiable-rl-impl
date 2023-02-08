@@ -16,6 +16,8 @@ from model.tree_wrapper import TreeWrapper
 from test.evaluate import evaluate_policy
 from train.oracle import get_model_cls
 
+from trees.models import QTree
+
 
 def train_viper(args):
     # Load stable baselines model from path
@@ -28,7 +30,8 @@ def train_viper(args):
 
     for i in tqdm(range(args.steps)):
         beta = 1 - (i / args.steps)
-        dataset += sample_trajectory(args, policy, beta)
+        dataset += sample_trajectory_qtree(args, policy, beta)
+        # dataset += sample_trajectory(args, policy, beta)
 
         clf = DecisionTreeClassifier(max_depth=args.max_depth, max_leaf_nodes=args.max_leaves)
         x = np.array([traj[0] for traj in dataset])
@@ -111,6 +114,37 @@ def sample_trajectory(args, policy, beta):
     return trajectory
 
 
+def sample_trajectory_qtree(args, policy, beta):
+    env = make_env(args)
+
+    oracle = QTree(args.tree_path)
+    policy = policy or oracle
+
+    trajectory = []
+
+    obs = env.reset()
+    while len(trajectory) < args.n_steps:
+        active_policy = [policy, oracle][np.random.binomial(1, beta)]
+        if isinstance(active_policy, DecisionTreeClassifier):
+            action = active_policy.predict(obs)
+        else:
+            action = np.array([active_policy.predict(obs[0])])
+
+        if not isinstance(active_policy, DecisionTreeClassifier):
+            oracle_action = action
+        else:
+            oracle_action = np.array([oracle.predict(obs[0])])
+
+        obs, reward, done, info = env.step(action)
+
+        if args.render:
+            env.render()
+
+        state_loss = get_loss(oracle, obs)
+        trajectory += list(zip(obs, oracle_action, state_loss))
+
+    return trajectory
+
 # This is the ~l loss from the paper that tries to capture
 # how "critical" a state is, i.e. how much of a difference
 # it makes to choose the best vs the worst action
@@ -125,5 +159,9 @@ def get_loss(model: BaseAlgorithm, obs):
         action_prob_tensor = model.policy.get_distribution(torch.from_numpy(obs).cuda()).distribution.probs
         action_prob = np.log(action_prob_tensor.detach().cpu().numpy() + 1e-4)
         return action_prob.max(axis=1) - action_prob.min(axis=1)
+
+    if isinstance(model, QTree):
+        q_values = model.predict_qs(obs[0])
+        return np.array([q_values.max() - q_values.min()])
 
     raise NotImplementedError(f"Model type {type(model)} not supported")
