@@ -75,6 +75,11 @@ if __name__ == "__main__":
         "--max-depth", type=int, default=None,
         help="Maximum depth to use for the extracted decision tree")
 
+    # my addition
+    train_viper.add_argument(
+        "--tree_path", type=str, default=None,
+        help="Path to UPPAAL strategy to use as oracle")
+
     test_viper = subparsers.add_parser('test-viper', parents=[parent_parser], help="Test viper")
     test_viper.add_argument(
         "--max-leaves", type=int, default=None,
