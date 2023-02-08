@@ -6,7 +6,6 @@ import torch
 from sklearn.tree import DecisionTreeClassifier
 from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.base_class import BaseAlgorithm
-from stable_baselines3.common.vec_env import VecMonitor
 
 from tqdm import tqdm
 
@@ -46,7 +45,7 @@ def train_viper(args):
     print(f"Performing cross-validation to find the best policy")
     # Cross validate each policy and save the best one
     rewards = []
-    env = VecMonitor(make_env(args, test_viper=True))
+    env = make_env(args, test_viper=True)
     for i, policy in enumerate(tqdm(policies)):
         mean_reward, std_reward = evaluate_policy(TreeWrapper(policy), env)
         if args.verbose == 2:
