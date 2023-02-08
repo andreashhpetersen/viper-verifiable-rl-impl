@@ -6,7 +6,6 @@ import torch
 from sklearn.tree import DecisionTreeClassifier
 from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.base_class import BaseAlgorithm
-from stable_baselines3.common.vec_env import VecMonitor
 
 from tqdm import tqdm
 
